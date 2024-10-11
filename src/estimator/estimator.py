@@ -14,16 +14,11 @@ import qkeras.qtools.qtools_util
 
 ####int_bits means weight int_bits. Precision is the total bits for the layer
 class estimator():
-    def __init__(self,model,precision=8,int_bits=0,reuse=1,layer=0,DSP_mul=True,accum_bits=16,accum_int_bits=6,input_int_bits=0):#,layer_int_bits = 0):
+    def __init__(self,model,precision=8,int_bits=0,reuse=1,layer=0,DSP_mul=True):#,layer_int_bits = 0):
     	
     	self.it_min = -128
     	self.it_max = 128
     	self.sign_bits = 1
-    	#self.adder_int_bits = int_bits + 1 + layer_int_bits
-    	#self.adder_bits = 8 + precision
-    	self.input_int_bits=input_int_bits
-    	self.accum_bits = accum_bits
-    	#self.accum_int_bits = accum_int_bits
     	self.int_bits = int_bits
     	self.DSP_mul = DSP_mul
     	self.layer = layer
@@ -94,14 +89,12 @@ class estimator():
         real_bias = 0
         zer = 0
         LUT_impl = 0
-        #for w in loaded_model.weights[3]:
         real_bias = np.count_nonzero(loaded_model.weights[layer+1])
         
         
         for w in norm_weights:
                 for weight in w:
                     if DSP_mul:
-                        #print("weight: " + str(weight))
                         if LUT_orig[int(weight) + 128] != 62:
                             mul_luts += LUT_file_DSP[int(weight) + 128]
                             if LUT_file_DSP[int(weight) + 128] == 0 and weight != 0:
@@ -245,21 +238,15 @@ class estimator():
         if mul_ins > self.real_muls:
     			#mul_luts += math.ceil(real_muls*17) if DSP_mul else math.ceil(real_muls*62)
                 mul_luts += 0 if DSP_mul else math.ceil(self.real_muls*52)
-                #print(self.real_muls)
                 self.DSP = self.real_muls
         else:
-    			#mul_luts += math.ceil(mul_ins*17) if DSP_mul else math.ceil(mul_ins*62)
-                #mul_luts += math.ceil(mul_ins*62) if not(DSP_mul) else 0
                 self.DSP = mul_ins
 
                 mul_luts += 0 if DSP_mul else LUT_impl
         if not self.DSP_mul:
         	self.DSP = 0
         lut_accum = 0
-		#total_add = (real_muls + np.count_nonzero(loaded_model.weights[layer+1]) -loaded_model.weights[layer].shape[1])
         total_add = (self.rm - loaded_model.weights[layer].shape[1]) + real_bias
-        #add_multiplier = self.accum_bits if self.accum_int_bits == 7 or self.accum_int_bits == 6 else (self.accum_bits - abs(6 - #self.accum_int_bits) if self.accum_int_bits < 6 else self.accum_bits - abs(7 - self.accum_int_bits))
-        #add_multiplier = self.adder_bits + 1 if self.accum_int_bits >= self.adder_int_bits else (self.adder_bits - (self.adder_int_bits #- self.int_bits))
         if precision == 8:
         	if self.rm < 50:
         		add_multiplier = 13
@@ -367,7 +354,7 @@ class estimator():
         return total_lut
         
     def estim_FF(self,suppress = False):
-    	if(self.RF>4):
+    	if(self.RF>5):
     		self.RF = 5
     	
 
@@ -394,8 +381,6 @@ class estimator():
     def estim_DSP(self,suppress = False):
     	return self.DSP
     def estim_resource(self,suppress = False):
-    	#self.estim_LUT()
-    	#self.estim_FF()
     	print("-----------------------------------------------------------")
     	return self.estim_LUT(suppress), self.estim_FF(suppress),self.DSP
     
@@ -412,23 +397,16 @@ class estimator():
             com_metric = []
             for i in range(0,len(model[j].layers),2):
                 c = estimator(model[j],precision[j],int_bits[j],reuse,i,DSP_mul[j])
-                #print(j)
                 LUT_pred.append((c.estim_LUT(suppress=True))/14400)
                 FF_pred.append((c.estim_FF(suppress=True))/28800)
                 DSP_pred.append(c.estim_DSP()/66)
-                #com_metric.append(np.array(FF_pred[0]) + np.array(LUT_pred[0]) + np.array(DSP_pred[0]))
-                #print(com_metric)
-                #print("FF_pred is " + str(FF_pred))
                       
-                #print("LUT_pred is " + str(LUT_pred))
-                #print("DSP_pred is " + str(DSP_pred))
 
             metric.append(sum(FF_pred + LUT_pred + DSP_pred))
             if dirname != "":
                 with open(dirname + str(j) + "/size.txt",'w') as f:
                     f.write(str(metric[j]))
                     f.close()
-            #print(metric)
             print("-----------------------------------------------------------")
         #return FF_pred,LUT_pred,DSP_pred
             
