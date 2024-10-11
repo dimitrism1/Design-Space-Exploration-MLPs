@@ -94,14 +94,12 @@ class estimator():
         real_bias = 0
         zer = 0
         LUT_impl = 0
-        #for w in loaded_model.weights[3]:
         real_bias = np.count_nonzero(loaded_model.weights[layer+1])
         
         
         for w in norm_weights:
                 for weight in w:
                     if DSP_mul:
-                        #print("weight: " + str(weight))
                         if LUT_orig[int(weight) + 128] != 62:
                             mul_luts += LUT_file_DSP[int(weight) + 128]
                             if LUT_file_DSP[int(weight) + 128] == 0 and weight != 0:
@@ -243,23 +241,17 @@ class estimator():
                         	LUT_impl += LUT_file[int(weight) + 128]
 
         if mul_ins > self.real_muls:
-    			#mul_luts += math.ceil(real_muls*17) if DSP_mul else math.ceil(real_muls*62)
-                mul_luts += 0 if DSP_mul else math.ceil(self.real_muls*52)
-                #print(self.real_muls)
+                mul_luts += 0 if DSP_mul else math.ceil(self.real_muls*62)
                 self.DSP = self.real_muls
         else:
-    			#mul_luts += math.ceil(mul_ins*17) if DSP_mul else math.ceil(mul_ins*62)
-                #mul_luts += math.ceil(mul_ins*62) if not(DSP_mul) else 0
                 self.DSP = mul_ins
 
                 mul_luts += 0 if DSP_mul else LUT_impl
         if not self.DSP_mul:
         	self.DSP = 0
         lut_accum = 0
-		#total_add = (real_muls + np.count_nonzero(loaded_model.weights[layer+1]) -loaded_model.weights[layer].shape[1])
         total_add = (self.rm - loaded_model.weights[layer].shape[1]) + real_bias
-        #add_multiplier = self.accum_bits if self.accum_int_bits == 7 or self.accum_int_bits == 6 else (self.accum_bits - abs(6 - #self.accum_int_bits) if self.accum_int_bits < 6 else self.accum_bits - abs(7 - self.accum_int_bits))
-        #add_multiplier = self.adder_bits + 1 if self.accum_int_bits >= self.adder_int_bits else (self.adder_bits - (self.adder_int_bits #- self.int_bits))
+        
         if precision == 8:
         	if self.rm < 50:
         		add_multiplier = 13
@@ -373,9 +365,9 @@ class estimator():
 
 
     	poly_ft = PolynomialFeatures(degree=4,include_bias=False)
-
-    	filename = "./Regression/models/multi_poly.joblib"
-    	ff_model = joblib.load(filename)
+    	filename = {0:"./Regression/models/multi_poly_lut.joblib",1:"./Regression/models/multi_poly.joblib"}
+    	#filename = "./Regression/models/multi_poly.joblib"
+    	ff_model = joblib.load(filename[self.DSP_mul])
     	mul = self.rm
     	reuse = self.RF
     	prec = self.precision
