@@ -44,7 +44,7 @@ import estimator.estimator as est
 
 
 class dse(Problem):
-    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,population ="",parameters = "",dirname = "./dse_model"):
+    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,population ="",parameters = "",dirname = "./dse_model",only_est = False,models = "",reuse=1):
         self.layer_in = layer_in
         self.layer_out = layer_out
         self.X_train = X_train
@@ -55,8 +55,10 @@ class dse(Problem):
         self.parameters = parameters
         self.test_compare = test_compare
         self.dirname = dirname
-        
-        if type(self.parameters) == np.ndarray:
+        self.only_est = only_est
+        self.models = models
+        self.RF = reuse
+        if type(self.parameters) == np.ndarray:		#######if the parameters are provided by the user, a flag ready is raised
             self.ready = True
         else:
             self.ready = False
@@ -67,21 +69,22 @@ class dse(Problem):
                          vtype = "int"
                         )
     def _evaluate(self,x,out):
-        if type(self.population) == np.ndarray:
-            
-            accuracy = self.population[0,:]
-            F1 = np.ones(len(accuracy)) - accuracy
-            F2 = self.population[1,:]
-
-
+        #if type(self.population) == np.ndarray:		#######if the population is provided, then we don't need to run the crp function
+        if self.ready:
+            if not self.only_est:    
+            	accuracy = self.population[0,:]
+            	F1 = np.ones(len(accuracy)) - accuracy
+            	F2 = self.population[1,:]
+            else:
+                accuracy = self.population[0,:]
+                F1 = np.ones(len(accuracy)) - accuracy
+                F2 = est.estimator.estim_model(model = self.models,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
         else:
             accuracy,model = (crp.create_pop(self.layer_in,x[:,0],x[:,1],x[:,2],self.layer_out,x[:,3],x[:,4],x[:,5],x[:,6],x[:,7],self.X_train,self.X_test,self.Y_train,self.Y_test,self.test_compare,dirname=self.dirname))
             F1 = np.ones(len(accuracy)) - accuracy
-            print(x)
-            F2 = est.estimator.estim_model(model = model,precision = x[:,6],int_bits = x[:,4],reuse=1,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
+
+            F2 = est.estimator.estim_model(model = model,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
             
-        print("F1 is " + str(F1))        
-        print("F2 is " + str(F2))
         
         out['F'] = [F1,F2]
         
@@ -89,22 +92,27 @@ class dse(Problem):
     def minimize(self,problem,pop_size,generations,seed=1,Verbose = True):
         if not self.ready:
             algorithm = NSGA2(pop_size = pop_size)
-        else:
+        else:							
+        ########if the population and parameters are provided, the algorithm runs on existing data
+        
             algorithm = NSGA2(pop_size = pop_size,sampling = self.parameters,eliminate_duplicates=False)
-            print(self.parameters)
+            
         self.res = minimize(problem,algorithm,generations,seed,Verbose=True)
         return self.res
     
     def get_opt_solutions(self):
-        return self.res.F
+        self.hls_acc = 1-self.res.F[:,0]
+        self.opt_sol = np.concatenate(([self.hls_acc],[self.res.F[:,1]])).transpose()
+        return self.opt_sol
     
     def get_opt_params(self):
         return self.res.X.round().astype(int)
     
     def get_all_solutions(self):
         pop = self.res.pop
-        solutions = pop.get("F")
-        return solutions
+        self.solutions = pop.get("F")
+        all_sol = np.concatenate(([1-self.solutions[:,0]],[self.solutions[:,1]])).transpose()
+        return all_sol
     
     def get_all_params(self):
         pop = self.res.pop
@@ -112,13 +120,15 @@ class dse(Problem):
         return params
     
     def get_fitting_solutions(self):
-        return self.res.F[self.res.F[:,1] < 1]
+        optimal_solutions=self.get_opt_solutions()
+        return self.opt_sol[self.opt_sol[:,1] < 1]
     def get_fitting_parameters(self):
         return self.res.X[self.res.F[:,1] < 1].round().astype(int)
         
     def plot_parento_front(self):
-        plt.scatter(self.get_all_solutions()[:,0],self.get_all_solutions()[:,1])
-        plt.scatter(self.get_opt_solutions()[:,0],self.get_opt_solutions()[:,1])
+        all_solutions = self.get_all_solutions()
+        plt.scatter(self.solutions[:,0],self.solutions[:,1])
+        plt.scatter(self.res.F[:,0],self.res.F[:,1])
         plt.ylabel("Resources")
-        plt.xlabel("1 - Accuracy")
+        plt.xlabel("1 - Accuracy (%)")
         

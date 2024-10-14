@@ -14,16 +14,12 @@ import qkeras.qtools.qtools_util
 
 ####int_bits means weight int_bits. Precision is the total bits for the layer
 class estimator():
-    def __init__(self,model,precision=8,int_bits=0,reuse=1,layer=0,DSP_mul=True,accum_bits=16,accum_int_bits=6,input_int_bits=0):#,layer_int_bits = 0):
+    def __init__(self,model,precision=8,int_bits=0,reuse=1,layer=0,DSP_mul=True,input_int_bits=0):#,layer_int_bits = 0):
     	
     	self.it_min = -128
     	self.it_max = 128
     	self.sign_bits = 1
-    	#self.adder_int_bits = int_bits + 1 + layer_int_bits
-    	#self.adder_bits = 8 + precision
     	self.input_int_bits=input_int_bits
-    	self.accum_bits = accum_bits
-    	#self.accum_int_bits = accum_int_bits
     	self.int_bits = int_bits
     	self.DSP_mul = DSP_mul
     	self.layer = layer
@@ -305,11 +301,11 @@ class estimator():
         
         elif precision == 4:
         	if self.rm < 50:
-        		add_multiplier = 16
+        		add_multiplier = 13
         	elif self.rm < 150:
-        		add_multiplier = 14   #self.accum_bits
+        		add_multiplier = 12   #self.accum_bits
         	elif self.rm < 400:
-        		add_multiplier = 12
+        		add_multiplier = 11
         	else:
         		add_multiplier = 12
 	
@@ -336,7 +332,7 @@ class estimator():
         		add_multiplier = 12
 	
 	
-        lut_accum = total_add * (add_multiplier + self.input_int_bits) #-13*real_bias + 11 * real_bias
+        lut_accum = total_add * (add_multiplier)# + self.input_int_bits) 
 
         total_lut = mul_luts + lut_accum
         lut_filename = "./Regression/models/lut_regression.joblib"
@@ -359,8 +355,8 @@ class estimator():
         return total_lut
         
     def estim_FF(self,suppress = False):
-    	if(self.RF>4):
-    		self.RF = 5
+    	if(self.RF>5):
+    		self.RF = 4
     	
 
 

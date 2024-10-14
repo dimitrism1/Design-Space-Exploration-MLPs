@@ -104,7 +104,7 @@ class utils():
     
     
     @classmethod    
-    def gather(self,loaded_model,prec = 8,reuse = 1,DSP = True,accum_bits=16,accum_int_bits=6,suppress = False):
+    def gather(self,loaded_model,prec = 8,reuse = 1,DSP = True,suppress = False):
         LUT_pred = []
         FF_pred = []
         DSP_pred = []
@@ -113,10 +113,10 @@ class utils():
         for j in range(0,int(len(loaded_model.layers)),2):
             int_part = 0
             if j==0:
-            	layer_int_bits = 2
+            	layer_int_bits = 0
             else:
             	layer_int_bits = 0
-            obj.append(est1.estimator(precision=prec,model=loaded_model,int_bits=int_part,layer=j,reuse=reuse,DSP_mul=DSP,accum_bits=accum_bits,accum_int_bits=accum_int_bits,input_int_bits=layer_int_bits))
+            obj.append(est1.estimator(precision=prec,model=loaded_model,int_bits=int_part,layer=j,reuse=reuse,DSP_mul=DSP,input_int_bits=layer_int_bits))
             LUT,FF,dsp = obj[int(j/2)].estim_resource(suppress)
             DSP_pred.append(dsp)
             LUT_pred.append(LUT) 
