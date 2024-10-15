@@ -1,4 +1,4 @@
-def create_pop(layer_1,layer_2,layer_3,layer_4,layer_5,bits,int_bits,sparsity,precision,selector,X_train,X_test,Y_train,Y_test,compare_test,dirname = "./dse_models/models_5" + "/model_"):
+def create_pop(layer_1,layer_2,layer_3,layer_4,layer_5,bits,int_bits,sparsity,precision,selector,X_train,X_test,Y_train,Y_test,compare_test,batch_size,dirname = "./dse_models/models_115" + "/model_"):
     from tensorflow.keras.models import Sequential
     from tensorflow.keras.optimizers import Adam
     from tensorflow.keras.regularizers import l1
@@ -84,7 +84,7 @@ def create_pop(layer_1,layer_2,layer_3,layer_4,layer_5,bits,int_bits,sparsity,pr
             callbacks.callbacks.append(pruning_callbacks.UpdatePruningStep())
 
 
-            model.fit(X_train,Y_train,batch_size=1024,epochs=10,
+            model.fit(X_train,Y_train,batch_size=batch_size,epochs=10,
                 validation_split=0.25,
                 verbose=1,
                 shuffle=True,

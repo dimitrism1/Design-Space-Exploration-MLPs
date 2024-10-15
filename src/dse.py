@@ -44,13 +44,14 @@ import estimator.estimator as est
 
 
 class dse(Problem):
-    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,population ="",parameters = "",dirname = "./dse_model",only_est = False,models = "",reuse=1):
+    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,batch_size=1024,population ="",parameters = "",dirname = "./dse_model_",only_est = False,models = "",reuse=1):
         self.layer_in = layer_in
         self.layer_out = layer_out
         self.X_train = X_train
         self.X_test = X_test
         self.Y_train = Y_train
         self.Y_test = Y_test
+        self.batch_size = batch_size
         self.population = population
         self.parameters = parameters
         self.test_compare = test_compare
@@ -62,6 +63,7 @@ class dse(Problem):
             self.ready = True
         else:
             self.ready = False
+            
         super().__init__(n_var = 8,
                          n_obj = 2,
                          xl = np.array([10,8,6,2,0,10,2,0]),
@@ -80,7 +82,7 @@ class dse(Problem):
                 F1 = np.ones(len(accuracy)) - accuracy
                 F2 = est.estimator.estim_model(model = self.models,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
         else:
-            accuracy,model = (crp.create_pop(self.layer_in,x[:,0],x[:,1],x[:,2],self.layer_out,x[:,3],x[:,4],x[:,5],x[:,6],x[:,7],self.X_train,self.X_test,self.Y_train,self.Y_test,self.test_compare,dirname=self.dirname))
+            accuracy,model = (crp.create_pop(self.layer_in,x[:,0],x[:,1],x[:,2],self.layer_out,x[:,3],x[:,4],x[:,5],x[:,6],x[:,7],self.X_train,self.X_test,self.Y_train,self.Y_test,self.test_compare,self.batch_size,dirname=self.dirname))
             F1 = np.ones(len(accuracy)) - accuracy
 
             F2 = est.estimator.estim_model(model = model,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
