@@ -44,7 +44,7 @@ import estimator.estimator as est
 
 
 class dse(Problem):
-    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,batch_size=1024,population ="",parameters = "",dirname = "./dse_model_",only_est = False,models = "",reuse=1):
+    def __init__(self,layer_in,layer_out,X_train,X_test,Y_train,Y_test,test_compare,batch_size=1024,population ="",parameters = "",dirname = "./dse_model_",only_est = False,models = "",reuse=1,device = "Z7007S"):
         self.layer_in = layer_in
         self.layer_out = layer_out
         self.X_train = X_train
@@ -59,6 +59,8 @@ class dse(Problem):
         self.only_est = only_est
         self.models = models
         self.RF = reuse
+        self.device = device
+        
         if type(self.parameters) == np.ndarray:		#######if the parameters are provided by the user, a flag ready is raised
             self.ready = True
         else:
@@ -80,12 +82,12 @@ class dse(Problem):
             else:
                 accuracy = self.population[0,:]
                 F1 = np.ones(len(accuracy)) - accuracy
-                F2 = est.estimator.estim_model(model = self.models,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
+                F2 = est.estimator.estim_model(model = self.models,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname,device = self.device)
         else:
             accuracy,model = (crp.create_pop(self.layer_in,x[:,0],x[:,1],x[:,2],self.layer_out,x[:,3],x[:,4],x[:,5],x[:,6],x[:,7],self.X_train,self.X_test,self.Y_train,self.Y_test,self.test_compare,self.batch_size,dirname=self.dirname))
             F1 = np.ones(len(accuracy)) - accuracy
 
-            F2 = est.estimator.estim_model(model = model,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname)
+            F2 = est.estimator.estim_model(model = model,precision = x[:,6],int_bits = x[:,4],reuse=self.RF,DSP_mul=x[:,7],suppress=True,dirname = self.dirname,device = self.device)
             
         
         out['F'] = [F1,F2]
