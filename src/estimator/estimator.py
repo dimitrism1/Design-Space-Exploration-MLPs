@@ -387,11 +387,15 @@ class estimator():
     	return self.estim_LUT(suppress), self.estim_FF(suppress),self.DSP
     
     @classmethod
-    def estim_model(self,model,precision=np.zeros(1)+8,int_bits=np.ones(1),reuse=1,DSP_mul=True,suppress = False,dirname = ""):
+    def estim_model(self,model,precision=np.zeros(1)+8,int_bits=np.ones(1),reuse=1,DSP_mul=True,suppress = False,dirname = "",device = "Z7007S"):
 
         precision = precision.round().astype(int)
         int_bits = int_bits.round().astype(int)
         metric = []
+        device_FF = {"Z7007S":28800, "Z7012S":68800, "Z7014S":81200, "Z7010":35200, "Z7015":92400, "Z7020":106400}
+        device_LUT = {"Z7007S":14400, "Z7012S":34400, "Z7014S":40600, "Z7010":17600, "Z7015":46200, "Z7020":53200}
+        device_DSP = {"Z7007S":66, "Z7012S":120, "Z7014S":170, "Z7010":80, "Z7015":160, "Z7020":220}
+
         for j in range(len(model)):
             FF_pred = []
             LUT_pred = []
@@ -400,9 +404,9 @@ class estimator():
             for i in range(0,len(model[j].layers),2):
                 c = estimator(model[j],precision[j],int_bits[j],reuse,i,DSP_mul[j])
                 #print(j)
-                LUT_pred.append((c.estim_LUT(suppress=True))/14400)
-                FF_pred.append((c.estim_FF(suppress=True))/28800)
-                DSP_pred.append(c.estim_DSP()/66)
+                LUT_pred.append((c.estim_LUT(suppress=True))/device_LUT[device])
+                FF_pred.append((c.estim_FF(suppress=True))/device_FF[device])
+                DSP_pred.append(c.estim_DSP()/device_DSP[device])
                 #com_metric.append(np.array(FF_pred[0]) + np.array(LUT_pred[0]) + np.array(DSP_pred[0]))
                 #print(com_metric)
                 #print("FF_pred is " + str(FF_pred))
