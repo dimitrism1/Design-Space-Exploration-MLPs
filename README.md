@@ -1,4 +1,4 @@
-Design space algorithm for the Zynq-7000 using NSGA-II. Includes a resource estimator and examples for both
+Design space exploration using NSGA-II in MLPs for the Zynq-7000 device family . Includes a resource(FF,LUT,DSP) Zynq-7000 estimator and examples for both
 
 ## Dependencies
 The dependencies and installs that are needed are:
@@ -21,10 +21,21 @@ dependencies:
       - qkeras==0.9.0
       - conifer==0.2b0
       - pysr==0.16.3
-      
+
+Vitis 2021 or newer is required to use hls4ml. The estimator was based on Vitis 2022.1
+
 Alternatively the environment.yml configuration file can be used like this:
 
 ```console
 conda create -f environment.yml 
 conda activate DSE
 ```
+
+##Outline
+The code is organised into 3 main directories:
+-MLP training for FF estimation(Training_MLPs)
+-Estimator testing and LUT modeling(testing)
+-DSE setup and examples
+
+
+
