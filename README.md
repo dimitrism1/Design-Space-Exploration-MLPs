@@ -31,7 +31,7 @@ conda create -f environment.yml
 conda activate DSE
 ```
 
-##Outline
+## Outline
 The code is organised into 3 main directories:
 -MLP training for FF estimation(Training_MLPs)
 -Estimator testing and LUT modeling(testing)
