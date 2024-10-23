@@ -72,10 +72,10 @@ class dse(Problem):
                          xu = np.array([64,64,32,8,1,95,8,1]),
                          vtype = "int"
                         )
-    def _evaluate(self,x,out):
+    def _evaluate(self,x,out,*args,**kwargs):
         #if type(self.population) == np.ndarray:		#######if the population is provided, then we don't need to run the crp function
         if self.ready:
-            if not self.only_est:    
+            if not self.only_est:    ##### if the flag only_est is activated, run only the part for the estimator
             	accuracy = self.population[0,:]
             	F1 = np.ones(len(accuracy)) - accuracy
             	F2 = self.population[1,:]
