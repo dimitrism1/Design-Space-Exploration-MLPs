@@ -16,3 +16,10 @@ The number of models is determined by the user, but it is suggested that it is h
 
 ### HLS synthesis
 Each HLS model is synthesized to extract its resource utilization. To run synthesis several scripts where used and can be found in the scripts redirectory of the repository. The init.sh bash script is called in the case of generic multiplier implementation on DSPs and init_lut.sh in case of LUT implementation. The script starts the synthesis using the build tcl script. The script extracts the parameters of the run(clock,device,project_name) from the project_orig.tcl script and inserts the multiplier implementation. After each run the results are saved in the dirname directory, which is specifed prior to the run. In the end of each iteration, the autopilot files are removed as they consume unnecessarily much disk space. From the init.sh or init_lut.sh script the user has to change the Vitis version or it won't run synthesis
+
+### Running the training scripts
+To train each model simply run the bash script inside each directory
+```console
+source run.sh 
+```
+It is advised to first verify the target directory where the results will be saved
