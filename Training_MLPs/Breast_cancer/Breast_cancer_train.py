@@ -176,3 +176,20 @@ for precision in range(8,1,-1):
                      for num in range(j+2):
                          os.system('rm -r ' + dirname +str(i) + '/reuse_' + str(num) + '/hls4ml_prj/myproject_prj/solution1/.autopilot')
 
+
+bits=8
+int_bits=0
+model = Sequential()
+
+model.add(QDense(layer_2, input_shape = layer_in,name='fc1',
+kernel_quantizer=quantized_bits(bits,int_bits,alpha=1,use_stochastic_rounding=True), bias_quantizer=quantized_bits(bits,int_bits,alpha=1),
+kernel_initializer='lecun_uniform', kernel_regularizer=l1(0.0001 ) ))
+
+model.add(QActivation(activation=quantized_relu(bits,int_bits,
+use_stochastic_rounding=False), name='relu1'))
+
+model.add(QDense(layer_out, name='output',
+kernel_quantizer=quantized_bits(bits,int_bits,alpha=1,use_stochastic_rounding=True), bias_quantizer=quantized_bits(bits,int_bits,alpha=1),
+kernel_initializer='lecun_uniform', kernel_regularizer=l1(0.0001 ) ))
+
+model.add(Activation(activation='softmax', name='softmax'))
