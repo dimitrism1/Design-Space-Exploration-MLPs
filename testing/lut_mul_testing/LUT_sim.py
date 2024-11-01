@@ -25,7 +25,7 @@ for pr in range(prec_min,prec_max,1):
     }
     }"""
     )
-os.system("mv run_sim.sh ./LUT_sim")
+os.system("cp run_test_sim.sh ./LUT_sim")
             
 for pr in range (prec_min,prec_max,1):
     for i in range(it_min,it_max,1):
@@ -58,4 +58,9 @@ for pr in range (prec_min,prec_max,1):
         w.close()
 
 
-        os.system('bash ./LUT_sim/run_sim.sh ' + str(pr) + " " + str(i))
+        os.system('bash ./LUT_sim/run_test_sim.sh ' + str(pr) + " " + str(i))
+    for rem in range(2,pr + 1):
+        for k in range(it_min,it_max,1):
+            os.system('rm -r ' + './LUT_sim/prec_' + str(rem)  + "/it_" + str(k) + '/mult.prj/solution1/.autopilot')
+
+     
