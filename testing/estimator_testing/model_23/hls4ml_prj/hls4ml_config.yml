@@ -1,0 +1,67 @@
+Backend: Vivado
+ClockPeriod: 5
+HLSConfig:
+  LayerName:
+    fc1:
+      Precision:
+        bias: fixed<8,1>
+        result: fixed<16,6>
+        weight: fixed<8,1>
+      Trace: false
+    fc1_input:
+      Precision:
+        result: fixed<8,2>
+      Trace: false
+    fc1_linear:
+      Precision:
+        result: fixed<16,6>
+      Trace: false
+    fc2:
+      Precision:
+        bias: fixed<8,1>
+        result: fixed<16,6>
+        weight: fixed<8,1>
+      Trace: false
+    fc2_linear:
+      Precision:
+        result: fixed<16,6>
+      Trace: false
+    fc3:
+      Precision:
+        bias: fixed<8,1>
+        result: fixed<16,6>
+        weight: fixed<8,1>
+      Trace: false
+    fc3_linear:
+      Precision:
+        result: fixed<16,6>
+      Trace: false
+    relu1:
+      Precision:
+        result: ap_ufixed<8,0,AP_RND_CONV,AP_SAT>
+      Trace: false
+    relu2:
+      Precision:
+        result: ap_ufixed<8,0,AP_RND_CONV,AP_SAT>
+      Trace: false
+    softmax:
+      Precision:
+        result: fixed<16,6>
+      Trace: false
+      exp_table_t: ap_fixed<18,8>
+      inv_table_t: ap_fixed<18,4>
+  Model:
+    BramFactor: 1000000000
+    Precision: fixed<16,6>
+    ReuseFactor: 1
+    Strategy: Latency
+    TraceOutput: false
+IOType: io_parallel
+InputData: null
+KerasModel: !keras_model './final_results/results/prec_8/reuse_1/model_23/hls4ml_prj/keras_model.h5'
+OutputDir: ./final_results/results/prec_8/reuse_1/model_23/hls4ml_prj
+OutputPredictions: null
+Part: xc7z007s-clg225-2
+ProjectName: myproject
+Stamp: e0519551
+Version: 1.0.0

@@ -387,7 +387,7 @@ class estimator():
     	return self.estim_LUT(suppress), self.estim_FF(suppress),self.DSP
     
     @classmethod
-    def estim_model(self,model,precision=np.zeros(1)+8,int_bits=np.ones(1),reuse=1,DSP_mul=True,suppress = False,dirname = "",device = "Z7007S"):
+    def estim_model(self,model,precision=np.zeros(1)+8,int_bits=np.ones(1),reuse=1,DSP_mul=np.ones(1),suppress = False,dirname = "",device = "Z7007S"):
 
         precision = precision.round().astype(int)
         int_bits = int_bits.round().astype(int)

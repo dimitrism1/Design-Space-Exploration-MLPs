@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import hls4ml
-import estimator.estimator as est1
+import estimator as est1
 from tensorflow.keras.models import load_model
 from qkeras.utils import _add_supported_quantized_objects
 import qkeras.qtools.qtools_util
@@ -78,7 +78,7 @@ class utils():
                         else:
                         	self.DSP.append(0)
                        
-                    if len(model.layers) == 6:
+                    if len(model.layers) == 4:
                     	break
                 if(i==28):
                     d = lines.split("|")
@@ -104,7 +104,7 @@ class utils():
     
     
     @classmethod    
-    def gather(self,loaded_model,prec = 8,reuse = 1,DSP = True,suppress = False):
+    def gather(self,loaded_model,prec = 8,reuse = 1,DSP = True,accum_bits=16,accum_int_bits=6,suppress = False):
         LUT_pred = []
         FF_pred = []
         DSP_pred = []
@@ -112,8 +112,11 @@ class utils():
         self.model = loaded_model
         for j in range(0,int(len(loaded_model.layers)),2):
             int_part = 0
-
-            obj.append(est1.estimator(precision=prec,model=loaded_model,int_bits=int_part,layer=j,reuse=reuse,DSP_mul=DSP,input_int_bits=layer_int_bits))
+            if j==0:
+            	layer_int_bits = 2
+            else:
+            	layer_int_bits = 0
+            obj.append(est1.estimator(precision=prec,model=loaded_model,int_bits=int_part,layer=j,reuse=reuse,DSP_mul=DSP,accum_bits=accum_bits,accum_int_bits=accum_int_bits,input_int_bits=layer_int_bits))
             LUT,FF,dsp = obj[int(j/2)].estim_resource(suppress)
             DSP_pred.append(dsp)
             LUT_pred.append(LUT) 
@@ -123,7 +126,7 @@ class utils():
     @classmethod    
 
     def compare(self,real_LUT,real_FF,estim_LUT,estim_FF,filename,RF):
-
+        dif = 0
         if not os.path.exists(filename) :
                 with open(filename,'w') as f:
                     f.write("FF_real | FF_pred | FF_error | LUT_real | LUT_pred | LUT error\n")
@@ -137,24 +140,21 @@ class utils():
                     f.close()
         with open(filename,'a') as f:
             for i,LUT in enumerate (real_LUT):
-            	dif = 0
-            	for j in range(len(real_LUT[0])):
-            		
         #f.write(str(1))
-                	lut_error = round(100*abs(LUT[j] - estim_LUT[i][j])/LUT[j],3)
-                	ff_error = round(100*abs(real_FF[i][j] - estim_FF[i][j])/real_FF[i][j],3)
-                	if int(estim_FF[i][j]) < 0:
-                		dif += real_FF[i][j]
-                		estim_FF[i][j] = 0
-                	f.write(str(real_FF[i][j]) + "   | " + str(estim_FF[i][j]) + "   | " + str(ff_error) + "   | " + str(LUT[j]) + "    | " + str(estim_LUT[i][j]) + "    | " + str(lut_error) +    "|" + "    RF=" + str(RF[i]) + "\n")
-            	total_real_LUT=np.sum(LUT)
-            	total_real_FF=np.sum(real_FF[i]) - dif
-            	total_estim_LUT=np.sum(estim_LUT[i])
-            	total_estim_FF=np.sum(estim_FF[i])
-            	total_lut_error=round(100*abs(total_real_LUT - total_estim_LUT)/total_real_LUT,3)
-            	total_ff_error = round(100*abs(total_real_FF - total_estim_FF)/total_real_FF,3)
-            	f.write(str(total_real_FF) + "   | " + str(total_estim_FF) + "   | " + str(total_ff_error) + "   | " + str(total_real_LUT) + "    | " + str(total_estim_LUT) + "    | " + str(total_lut_error) + "     Total\n")
-            	f.write("-------------------------------------------------------------\n")
+                lut_error = round(100*abs(LUT - estim_LUT[i])/LUT,3)
+                ff_error = round(100*abs(real_FF[i] - estim_FF[i])/real_FF[i],3)
+                if int(estim_FF[i]) < 0:
+                	dif += real_FF[i]
+                	estim_FF[i] = 0
+                f.write(str(real_FF[i]) + "   | " + str(estim_FF[i]) + "   | " + str(ff_error) + "   | " + str(LUT) + "    | " + str(estim_LUT[i]) + "    | " + str(lut_error) +    "|" + "    RF=" + str(RF[i]) + "\n")
+            total_real_LUT=np.sum(real_LUT)
+            total_real_FF=np.sum(real_FF) - dif
+            total_estim_LUT=np.sum(estim_LUT)
+            total_estim_FF=np.sum(estim_FF)
+            total_lut_error=round(100*abs(total_real_LUT - total_estim_LUT)/total_real_LUT,3)
+            total_ff_error = round(100*abs(total_real_FF - total_estim_FF)/total_real_FF,3)
+            f.write(str(total_real_FF) + "   | " + str(total_estim_FF) + "   | " + str(total_ff_error) + "   | " + str(total_real_LUT) + "    | " + str(total_estim_LUT) + "    | " + str(total_lut_error) + "     Total\n")
+            f.write("-------------------------------------------------------------\n")
     
     @classmethod    
     
