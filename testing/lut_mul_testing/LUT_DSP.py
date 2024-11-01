@@ -10,7 +10,7 @@ prec_min = 2
 prec_max = 8
 it_min = -128
 it_max = 127
-for pr in range(prec_min,prec_max,1):
+for pr in range(prec_min,prec_max+1,1):
     for i in range(it_min,it_max,1):
         if not(os.path.exists('./LUT_DSP/prec_' + str(pr) + "/it_" + str(i) + '/')):
             os.makedirs('./LUT_DSP/prec_' + str(pr) + "/it_" + str(i))
@@ -25,9 +25,9 @@ for pr in range(prec_min,prec_max,1):
     }
     }"""
     )
-os.system("mv run_dsp.sh ./LUT_DSP")
+os.system("cp run_test_DSP.sh ./LUT_DSP")
             
-for pr in range (prec_min,prec_max,1):
+for pr in range (prec_min,prec_max+1,1):
     for i in range(it_min,it_max,1):
         with open('./LUT_DSP/prec_' + str(pr) + '/run_test.tcl','w') as w:
             w.write("""set XPART xc7z007s-clg225-2
@@ -56,6 +56,7 @@ for pr in range (prec_min,prec_max,1):
     exit"""
     )
         w.close()
-
-
-        os.system('bash ./LUT_DSP/run_dsp.sh ' + str(pr) + " " + str(i))
+        os.system('bash ./LUT_DSP/run_test_DSP.sh ' + str(pr) + " " + str(i))
+    for rem in range(2,pr + 1):
+        for k in range(it_min,it_max,1):
+            os.system('rm -r ' + './LUT_DSP/prec_' + str(rem)  + "/it_" + str(k) + '/mult.prj/solution1/.autopilot')
